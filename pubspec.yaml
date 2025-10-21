@@ -22,7 +22,8 @@ dependencies:
   # Internacionalización
   flutter_localizations:
     sdk: flutter
-  intl: ^0.18.1
+  intl: ^0.20.1
+  fl_chart: ^0.66.2
   
   # Gestión de Estado
   provider: ^6.1.1

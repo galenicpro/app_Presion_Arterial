@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../data/models/lectura_ta.dart';
 import '../../data/repositories/lectura_repository.dart';
+import '/core/services/pdf_service.dart';
 import '../registro/registro_screen.dart';
 import 'widgets/registro_list_item.dart';
 import 'widgets/empty_state.dart';
@@ -74,11 +75,51 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _exportToPDF() {
-    // Implementar exportación a PDF
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Generando PDF...')));
+  void _exportToPDF() async {
+    final lecturas = _repository.getAllLecturas();
+
+    if (lecturas.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay registros para exportar'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Generando reporte PDF...'),
+          backgroundColor: Colors.blue,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      await PdfService.generateAndSharePdf(lecturas);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ PDF generado exitosamente'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Error al generar PDF: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
   }
 
   @override
