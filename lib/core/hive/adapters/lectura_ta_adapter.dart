@@ -1,10 +1,7 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
+// lib/core/hive/adapters/lectura_ta_adapter.dart
 
-part of 'lectura_ta.dart';
-
-// **************************************************************************
-// TypeAdapterGenerator
-// **************************************************************************
+import 'package:hive/hive.dart';
+import '../../../data/models/lectura_ta.dart';
 
 class LecturaTaAdapter extends TypeAdapter<LecturaTa> {
   @override
@@ -16,8 +13,9 @@ class LecturaTaAdapter extends TypeAdapter<LecturaTa> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
+
     return LecturaTa(
-      fecha: fields[0] as DateTime,
+      fecha: DateTime.parse(fields[0] as String),
       sistolica: fields[1] as int,
       diastolica: fields[2] as int,
       pulso: fields[3] as int,
@@ -32,7 +30,7 @@ class LecturaTaAdapter extends TypeAdapter<LecturaTa> {
     writer
       ..writeByte(7)
       ..writeByte(0)
-      ..write(obj.fecha)
+      ..write(obj.fecha.toIso8601String())
       ..writeByte(1)
       ..write(obj.sistolica)
       ..writeByte(2)
@@ -46,14 +44,4 @@ class LecturaTaAdapter extends TypeAdapter<LecturaTa> {
       ..writeByte(6)
       ..write(obj.tipoRegistro);
   }
-
-  @override
-  int get hashCode => typeId.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is LecturaTaAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
 }

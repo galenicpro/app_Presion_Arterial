@@ -4,15 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/services/local_storage_service.dart';
+import 'core/services/recordatorio_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/home/home_screen.dart';
 
 void main() async {
   // Asegura que los bindings de Flutter estén inicializados
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Configuración inicial para adultos mayores
-  await _setupForElderlyUsers();
 
   runApp(const CardioCareApp());
 }
@@ -25,6 +23,7 @@ class CardioCareApp extends StatelessWidget {
     return MaterialApp(
       title: 'CardioCare - Grupo Hogar Salud',
       debugShowCheckedModeBanner: false,
+
       // Tema accesible para adultos mayores
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
@@ -45,14 +44,40 @@ class CardioCareApp extends StatelessWidget {
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
             // Texto sin escalado para evitar problemas de layout
-            textScaleFactor: 1.0,
+            textScaler: TextScaler.linear(1.0),
           ),
           child: child!,
         );
       },
 
-      home: const HomeScreen(),
+      home: FutureBuilder(
+        future: _initializeApp(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasError) {
+              // Pantalla de error si hay problemas en la inicialización
+              return _ErrorScreen(error: snapshot.error.toString());
+            }
+            return const HomeScreen();
+          } else {
+            return const SplashScreen();
+          }
+        },
+      ),
     );
+  }
+}
+
+// --- Inicialización de la aplicación ---
+
+Future<void> _initializeApp() async {
+  try {
+    await _setupForElderlyUsers();
+    // Simular tiempo de carga mínimo para mejor UX
+    await Future.delayed(const Duration(milliseconds: 1500));
+  } catch (e) {
+    debugPrint('Error en inicialización: $e');
+    rethrow;
   }
 }
 
@@ -62,14 +87,17 @@ Future<void> _setupForElderlyUsers() async {
   // 1. Inicializar almacenamiento local
   await LocalStorageService().init();
 
-  // 2. Configurar orientación (solo portrait para simplificar)
-  await SystemChrome.setPreferredOrientations([
+  // 2. Inicializar servicio de recordatorios
+  await RecordatorioService().init();
+
+  // 3. Configurar orientación (solo portrait para simplificar)
+  SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // 3. Configurar UI overlays (barra de estado y navegación)
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  // 4. Configurar UI overlays (barra de estado y navegación)
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -79,15 +107,9 @@ Future<void> _setupForElderlyUsers() async {
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
-
-  // 4. Prevenir capturas de pantalla si es necesario (para privacidad)
-  // await SystemChrome.setPreferredOrientations([
-  //   DeviceOrientation.portraitUp,
-  // ]);
-  // Para habilitar: await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 }
 
-// --- Widget de carga inicial mejorado ---
+// --- Splash Screen ---
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -109,7 +131,7 @@ class SplashScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Color(0x1A000000),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -158,5 +180,61 @@ class SplashScreen extends StatelessWidget {
     );
   }
 }
-// Puedes personalizar aún más este SplashScreen
-// para que se adapte a las necesidades de tus usuarios.
+
+// --- Pantalla de Error ---
+
+class _ErrorScreen extends StatelessWidget {
+  final String error;
+
+  const _ErrorScreen({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 24),
+              const Text(
+                'Error al cargar la aplicación',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                error,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: () {
+                  // Reiniciar la aplicación
+                  runApp(const CardioCareApp());
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                ),
+                child: const Text('Reintentar', style: TextStyle(fontSize: 16)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

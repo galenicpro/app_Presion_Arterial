@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import '../../../data/models/lectura_ta.dart';
-import '../../../data/repositories/lectura_repository.dart';
 
 class RegistroListItem extends StatelessWidget {
   final LecturaTa lectura;
@@ -12,19 +11,16 @@ class RegistroListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repository = LecturaRepository();
-    final categoria = repository.clasificarPresion(
-      lectura.sistolica,
-      lectura.diastolica,
-    );
-
+    // CORREGIDO: Usar la categoría directamente del modelo LecturaTa
+    final categoria = lectura.categoriaPresion;
     final color = _getColorForCategoria(categoria);
 
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: color.withOpacity(0.3), width: 2),
+        // CORREGIDO: Reemplazado withOpacity por withAlpha
+        side: BorderSide(color: color.withAlpha(77), width: 2), // ~30% opacity
       ),
       child: InkWell(
         onTap: onTap,
@@ -55,7 +51,8 @@ class RegistroListItem extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      // CORREGIDO: Reemplazado withOpacity por withAlpha
+                      color: color.withAlpha(25), // ~10% opacity
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: color),
                     ),
@@ -138,11 +135,12 @@ class RegistroListItem extends StatelessWidget {
       case 'Hipertensión Grado 1':
         return Colors.orange;
       case 'Presión Elevada':
-        return Colors.yellow.shade700;
+        return Colors
+            .amber; // Usar Colors.amber en lugar de Colors.yellow.shade700
       case 'Normal':
         return Colors.green;
       case 'Óptima':
-        return Colors.green.shade800;
+        return const Color(0xFF2E7D32); // Verde oscuro directamente
       default:
         return Colors.grey;
     }

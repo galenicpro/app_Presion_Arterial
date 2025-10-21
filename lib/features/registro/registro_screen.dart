@@ -151,7 +151,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
                   decoration: BoxDecoration(
                     color: _getClassificationColor(
                       classification,
-                    ).withOpacity(0.1),
+                    ).withAlpha(25),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: _getClassificationColor(classification),

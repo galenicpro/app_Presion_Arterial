@@ -186,10 +186,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCurrentStatusBanner(LecturaTa ultimaLectura) {
-    final categoria = _repository.clasificarPresion(
-      ultimaLectura.sistolica,
-      ultimaLectura.diastolica,
-    );
+    // CORREGIDO: Usar la categoría directamente del modelo LecturaTa
+    final categoria = ultimaLectura.categoriaPresion;
 
     Color backgroundColor;
     IconData icon;
@@ -204,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
         icon = Icons.error_outline;
         break;
       case 'Presión Elevada':
-        backgroundColor = Colors.yellow[700]!;
+        backgroundColor = Colors.amber;
         icon = Icons.info_outline;
         break;
       default:
@@ -215,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      color: backgroundColor.withAlpha((0.9 * 255).round()),
+      color: backgroundColor.withAlpha(230), // ~90% opacity
       child: Row(
         children: [
           Icon(icon, color: Colors.white, size: 28),
@@ -285,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: RegistroListItem(
             lectura: lectura,
             onTap: () {
-              //  Implementar edición de registro
+              // Implementar edición de registro
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Función de edición en desarrollo'),
@@ -305,8 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            // obtener negro con 10% de opacidad (equivalente a Colors.black.withOpacity(0.1))
-            color: Colors.black.withAlpha((0.1 * 255).round()),
+            color: Colors.black.withAlpha(25), // ~10% opacity
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
